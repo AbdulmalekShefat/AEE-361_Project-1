@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib import patches
 from mpl_toolkits.mplot3d import Axes3D
 
-l1 = m2 = n3 = 0
+l1 = m2 = n3 = l2 = 0
 
 
 # verification
@@ -117,18 +117,21 @@ def transformation_matrix_2d(angles):
 
 
 def transformation_matrix_3d(angles):
-    global l1, m2, n3
+    global l1, l2, m2, n3
     l1 = numpy.cos(numpy.deg2rad(angles[0, 0]))
     m2 = numpy.cos(numpy.deg2rad(angles[0, 1]))
     n3 = numpy.cos(numpy.deg2rad(angles[0, 2]))
+    l2 = numpy.cos(numpy.deg2rad(angles[0, 3]))
+    print(l2)
 
     guess = (l1 + m2 + n3) / 6.
 
-    mGuess = scipy.array([guess, guess, guess, guess, guess, guess])
+    guesses = scipy.array([guess, guess, guess, guess, guess])
 
-    m = scipy.optimize.fsolve(directional_cosines, mGuess)
+    m = scipy.optimize.fsolve(directional_cosines, guesses)
     m = list(m)
     m.insert(0, l1)
+    m.insert(1, l2)
     m.insert(4, m2)
     m.append(n3)
 
@@ -136,20 +139,19 @@ def transformation_matrix_3d(angles):
 
 
 def directional_cosines(m):
-    l2 = m[0]
-    l3 = m[1]
-    m1 = m[2]
-    m3 = m[3]
-    n1 = m[4]
-    n2 = m[5]
+    l3 = m[0]
+    m1 = m[1]
+    m3 = m[2]
+    n1 = m[3]
+    n2 = m[4]
 
-    F = scipy.empty(6)
+    F = scipy.empty(5)
     F[0] = (l1 * l1) + (m1 * m1) + (n1 * n1) - 1
-    F[1] = l1 * l2 + m1 * m2 + n1 * n2
-    F[2] = l1 * l3 + m1 * m3 + n1 * n3
-    F[3] = l2 * l2 + m2 * m2 + n2 * n2 - 1
-    F[4] = l2 * l3 + m2 * m3 + n2 * n3
-    F[5] = l3 * l3 + m3 * m3 + n3 * n3 - 1
+    F[1] = (l1 * l2) + (m1 * m2) + (n1 * n2)
+    F[2] = (l1 * l3) + (m1 * m3) + (n1 * n3)
+    F[3] = (l2 * l2) + (m2 * m2) + (n2 * n2) - 1
+    F[4] = (l2 * l3) + (m2 * m3) + (n2 * n3)
+    # F[5] = (l3 * l3) + (m3 * m3) + (n3 * n3) - 1
 
     return F
 
@@ -207,6 +209,18 @@ def angle_input():
     for row in a.split(","):
         angles.append(float(row))
     return angles
+
+
+def l2_input():
+    a = ask_dialog("Transformation Angles",
+                   "enter the angle (in degrees) between (x, y')")
+    if a is None:
+        return
+    while not float(a):
+        a = ask_dialog("Transformation Angles",
+                       "enter the angle (in degrees) between (x, y')")
+
+    return float(a)
 
 
 def vector_input():
